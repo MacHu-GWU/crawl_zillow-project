@@ -6,5 +6,8 @@ __author__ = "Sanhe Hu"
 __license__ = "MIT"
 __short_description__ = "Zillow Crawler Tool Set"
 
-from .urlencoder import urlencoder as zilo_urlencoder
-from .htmlparser import htmlparser as zilo_htmlparser
+try:
+    from .urlencoder import urlencoder as zilo_urlencoder
+    from .htmlparser import htmlparser as zilo_htmlparser
+except ImportError:
+    pass
