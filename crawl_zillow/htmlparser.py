@@ -2,43 +2,35 @@
 # -*- coding: utf-8 -*-
 
 import re
-
-try:
-    from .helpers import int_filter, float_filter
-    from .packages.crawlib import exc
-    from .packages.crawlib.htmlparser import BaseHtmlParser
-except:
-    from crawl_zillow.helpers import int_filter, float_filter
-    from crawl_zillow.packages.crawlib import exc
-    from crawl_zillow.packages.crawlib.htmlparser import BaseHtmlParser
+from crawlib import exc, BaseHtmlParser
 
 
 class HTMLParser(BaseHtmlParser):
+    domain = "http://www.zillow.com"
 
-    def get_items(self, html, url="unknown url"):
+    def get_items(self, html):
         """Get state, county, zipcode, address code from lists page.
-        
+
         Example: http://www.zillow.com/browse/homes/md/
         """
         if "I'm not a robot" in html:
-            raise exc.CaptchaError(url)
+            raise exc.CaptchaError
 
         data = list()
-        soup = self.get_soup(html)
-        try:
-            div = soup.find("div", class_="zsg-lg-1-2 zsg-sm-1-1")
-            for li in div.find_all("li"):
-                a = li.find_all("a")[0]
-                link = a["href"].replace("/browse/homes/", "")
-                name = a.text.strip()
-                data.append((link, name))
-            return data
-        except Exception as e:
-            raise exc.ParseError("%s: %s" % (url, e))
+        soup = self.to_soup(html)
+
+        div = soup.find("div", class_="zsg-lg-1-2 zsg-sm-1-1")
+
+        for li in div.find_all("li"):
+            a = li.find_all("a")[0]
+            href = a["href"]
+            name = a.text.strip()
+            data.append((href, name))
+        return data
 
     def get_house_detail(self, html):
         """Get bedroom, bathroom, sqft and more information.
-        
+
         Example: http://www.zillow.com/homedetails/8510-Whittier-Blvd-Bethesda-MD-20817/37183103_zpid/
         """
         if "I'm not a robot" in html:
@@ -154,6 +146,7 @@ class HTMLParser(BaseHtmlParser):
             return data
         else:
             return None
+
 
 htmlparser = HTMLParser()
 
