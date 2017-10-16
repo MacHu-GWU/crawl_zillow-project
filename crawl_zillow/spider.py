@@ -9,6 +9,8 @@ from crawlib import (
 prefix = "http://webcache.googleusercontent.com/search?q=cache:"
 
 
+not_found_pattern = "was not found on this server."
+
 def get_html(url,
              headers=None,
              timeout=None,
@@ -21,23 +23,38 @@ def get_html(url,
 
     :param cache_only: if True, then real zillow site will never be used.
     """
-    cache_url = prefix + url
     if headers is None:
         headers = {
             Headers.UserAgent.KEY: Headers.UserAgent.chrome,
             Headers.Referer.KEY: "http://cachedview.com/",
         }
+
+    # Try endswith "/", exmaple: https://www.zillow.com/browse/homes/ca/los-angeles-county/
+    cache_url1 = prefix + url + "/"
     html = spider.get_html(
-        cache_url, headers=headers, timeout=timeout,
+        cache_url1, headers=headers, timeout=timeout,
         encoding="utf-8", errors=errors, wait_time=wait_time,
         **kwargs)
 
-    if cache_only:
+    if not_found_pattern not in html:
         return html
 
-    # not available in google cache
-    # crawl real zillow site, with wait_time 1.0
-    if "was not found on this server." in html:
+    # Try not endswith "/", exmaple: https://www.zillow.com/browse/homes/ca/los-angeles-county
+    cache_url2 = prefix + url
+    html = spider.get_html(
+        cache_url2, headers=headers, timeout=timeout,
+        encoding="utf-8", errors=errors, wait_time=wait_time,
+        **kwargs)
+
+    if not_found_pattern not in html:
+        return html
+
+    # Try with real zillow site
+    if cache_only:
+        return html
+    else:
+        # not available in google cache
+        # crawl real zillow site, with wait_time 1.0
         referer_url = "/".join(url.split("/")[:-1])
         headers = {
             Headers.UserAgent.KEY: Headers.UserAgent.chrome,
@@ -47,8 +64,6 @@ def get_html(url,
             url, headers=headers, timeout=timeout,
             encoding="utf-8", errors=errors, wait_time=1.0,
             **kwargs)
-    else:
-        return html
 
 
 # if __name__ == "__main__":

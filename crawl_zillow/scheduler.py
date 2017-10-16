@@ -8,10 +8,12 @@ import rolex
 from crawlib import Status
 
 try:
+    from . import config
     from .spider import get_html
     from .htmlparser import htmlparser
     from .model import BaseModel, State, County, Zipcode, Street
 except:
+    from crawl_zillow import config
     from crawl_zillow.spider import get_html
     from crawl_zillow.htmlparser import htmlparser
     from crawl_zillow.model import BaseModel, State, County, Zipcode, Street
@@ -59,7 +61,10 @@ class BaseScheduler(StatusFlagScheduler):
           :class:`~crawl_zillow.model.County`.
         """
         url = input_data.doc.url
-        html = get_html(url, **input_data.get_html_kwargs)
+        html = get_html(
+            url,
+            wait_time=config.Crawler.wait_time,
+            **input_data.get_html_kwargs)
 
         # some this model's attributes will also available in next model
         d = input_data.doc.to_dict()
@@ -77,7 +82,8 @@ class BaseScheduler(StatusFlagScheduler):
             data.update(d)
             next_model_instance = self.next_model(**data)
             output_data.append(next_model_instance)
-        return output_data[:3]
+        # output_data = output_data[:3] # COMMENT OUT IN PROD
+        return output_data
 
     def user_post_process(self, task):
         # insert into next model's collection
@@ -101,18 +107,19 @@ class BaseScheduler(StatusFlagScheduler):
             get_html_kwargs = dict()
 
         filters = {
-            "$nor": [  # not the finished document
-                {status_key: {"$gte": Status.S8_Finished.id}},
+            "$or": [  # not the finished document
+                {status_key: {"$not": {"$gte": Status.S8_Finished.id}}},
                 # now - edit_at <= update_interval
                 # means now - update_interval <= edit_at
                 {
                     edit_at_key: {
-                        "$gte": datetime.utcnow() - timedelta(seconds=self.update_interval)
+                        "$not": {
+                            "$gte": datetime.utcnow() - timedelta(seconds=self.update_interval)
+                        },
                     },
                 },
             ]
         }
-        print(filters)
         input_data_queue = list()
         for doc in self.model.by_filter(filters=filters).limit(limit):
             input_data = InputData(

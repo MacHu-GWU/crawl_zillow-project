@@ -9,3 +9,7 @@ class Config(object):
         password = None
         host = None
         port = None
+
+
+class Crawler(object):
+    wait_time = 1.0
