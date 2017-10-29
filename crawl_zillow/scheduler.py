@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-from pytq import StatusFlagScheduler
+from pytq import Task, StatusFlagScheduler
 import attr
-import rolex
 from crawlib import Status
 
 try:
@@ -24,16 +23,13 @@ class InputData(object):
     """
     :param doc: instance of :class:`~mongoengine.Document`.
     :param get_html_kwargs: arguments of :meth:`~crawl_zillow.spider.get_html`.
-
     """
     doc = attr.ib()
     get_html_kwargs = attr.ib(default=attr.Factory(dict))
 
 
-primary_key = BaseModel.href.name
-status_key = BaseModel._status.name
-edit_at_key = BaseModel._edit_at.name
-n_children_key = BaseModel._n_children.name
+primary_key = BaseModel.href.name # href field name
+n_children_key = BaseModel._n_children.name #  _n_children field name
 
 
 class BaseScheduler(StatusFlagScheduler):
@@ -69,8 +65,8 @@ class BaseScheduler(StatusFlagScheduler):
         # some this model's attributes will also available in next model
         d = input_data.doc.to_dict()
         del d[primary_key]
-        del d[status_key]
-        del d[edit_at_key]
+        del d[self.status_key]
+        del d[self.edit_at_key]
         del d[n_children_key]
 
         output_data = list()
@@ -82,10 +78,15 @@ class BaseScheduler(StatusFlagScheduler):
             data.update(d)
             next_model_instance = self.next_model(**data)
             output_data.append(next_model_instance)
-        # output_data = output_data[:3] # COMMENT OUT IN PROD
+        output_data = output_data[:2] # COMMENT OUT IN PROD
         return output_data
 
     def user_post_process(self, task):
+        """
+        1. insert data to collection.
+        2. update parent collection on ``status_key``, ``edit_at_key``,
+        ``n_children_key`` fields.
+        """
         # insert into next model's collection
         self.next_model.smart_insert(task.output_data)
 
@@ -95,8 +96,8 @@ class BaseScheduler(StatusFlagScheduler):
             {"_id": task.id},
             {
                 "$set": {
-                    status_key: Status.S8_Finished.id,
-                    edit_at_key: datetime.utcnow(),
+                    self.status_key: Status.S8_Finished.id,
+                    self.edit_at_key: datetime.utcnow(),
                     n_children_key: n_children,
                 }
             },
@@ -108,11 +109,11 @@ class BaseScheduler(StatusFlagScheduler):
 
         filters = {
             "$or": [  # not the finished document
-                {status_key: {"$not": {"$gte": Status.S8_Finished.id}}},
+                {self.status_key: {"$not": {"$gte": Status.S8_Finished.id}}},
                 # now - edit_at <= update_interval
                 # means now - update_interval <= edit_at
                 {
-                    edit_at_key: {
+                    self.edit_at_key: {
                         "$not": {
                             "$gte": datetime.utcnow() - timedelta(seconds=self.update_interval)
                         },
@@ -121,6 +122,7 @@ class BaseScheduler(StatusFlagScheduler):
             ]
         }
         input_data_queue = list()
+
         for doc in self.model.by_filter(filters=filters).limit(limit):
             input_data = InputData(
                 doc=doc,

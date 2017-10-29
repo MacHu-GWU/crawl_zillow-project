@@ -9,9 +9,12 @@ class HTMLParser(BaseHtmlParser):
     domain = "http://www.zillow.com"
 
     def get_items(self, html):
-        """Get state, county, zipcode, address code from lists page.
+        """
+        Get state, county, zipcode, address code from lists page.
 
-        Example: http://www.zillow.com/browse/homes/md/
+        Example:
+            target url: http://www.zillow.com/browse/homes/md/
+            data: [(href, name)]
         """
         if "I'm not a robot" in html:
             raise exc.CaptchaError

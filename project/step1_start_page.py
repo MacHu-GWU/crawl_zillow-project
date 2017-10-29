@@ -17,7 +17,7 @@ def crawl():
         state = State(href=href, state=name)
         state_list.append(state)
 
-    state_list = state_list[:3]  # COMMENT OUT IN PROD
+    state_list = state_list[:2]  # COMMENT OUT IN PROD
     State.smart_insert(state_list)
 
 

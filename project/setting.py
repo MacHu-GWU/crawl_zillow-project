@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+This is monkey patch to lively edit ``crawl_zillow.config.Config``.
+"""
+
 from crawl_zillow.config import Config
 
 Config.MongoDB.dbname = "zillowdb"

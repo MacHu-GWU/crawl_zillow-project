@@ -6,5 +6,5 @@ from crawl_zillow.scheduler import StateScheduler
 
 scheduler = StateScheduler()
 input_data_queue = scheduler.get_todo(
-    limit=3, get_html_kwargs={"cache_only": True})
+    limit=2, get_html_kwargs={"cache_only": True})
 scheduler.do(input_data_queue, multiprocess=False)

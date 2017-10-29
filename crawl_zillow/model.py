@@ -6,7 +6,6 @@ from mongoengine_mate import ExtendedDocument
 from crawlib import Status
 
 from datetime import datetime
-from pytq import StatusFlagScheduler
 
 try:
     from . import db

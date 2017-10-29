@@ -2,7 +2,7 @@ chardet
 requests
 beautifulsoup4
 crawlib==0.0.7
-pytq
+pytq==0.0.3
 pymongo_mate==0.0.4
 mongoengine_mate==0.0.1
 rolex==0.0.7
