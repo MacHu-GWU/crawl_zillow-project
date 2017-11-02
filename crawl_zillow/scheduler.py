@@ -199,7 +199,7 @@ class BaseScheduler(StatusFlagScheduler):
            input_data_queue,
            pre_process=None,
            multiprocess=False,
-           debug_mode=False,
+           ignore_error=True,
            use_browser=False):
         self._use_browser = use_browser
         if self._use_browser:
@@ -215,7 +215,7 @@ class BaseScheduler(StatusFlagScheduler):
                     input_data_queue,
                     pre_process=pre_process,
                     multiprocess=False,
-                    debug_mode=debug_mode,
+                    ignore_error=ignore_error,
                 )
         else:
             self._selenium_driver = None
@@ -223,7 +223,7 @@ class BaseScheduler(StatusFlagScheduler):
                 input_data_queue,
                 pre_process=pre_process,
                 multiprocess=multiprocess,
-                debug_mode=debug_mode,
+                ignore_error=ignore_error,
             )
 
 
