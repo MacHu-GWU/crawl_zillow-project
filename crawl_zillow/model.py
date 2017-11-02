@@ -99,3 +99,11 @@ class Street(BaseModel):
     meta = {
         "collection": Model.street
     }
+
+
+class Address(BaseModel):
+    state = mongoengine.StringField()
+    county = mongoengine.StringField()
+    zipcode = mongoengine.StringField()
+    street = mongoengine.StringField()
+    address = mongoengine.StringField()

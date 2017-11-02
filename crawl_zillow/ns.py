@@ -11,3 +11,4 @@ class Model(object):
     county = "county"
     zipcode = "zipcode"
     street = "street"
+    address = "address"

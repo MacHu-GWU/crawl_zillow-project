@@ -14,10 +14,17 @@ class HTMLParser(BaseHtmlParser):
 
         Example:
             target url: http://www.zillow.com/browse/homes/md/
+<<<<<<< HEAD
+            data: ``[(href, name), ...]``
+=======
             data: [(href, name)]
+>>>>>>> 4507a26c6cc47e0affe1f7000f912e536c45212b
         """
-        if "I'm not a robot" in html:
-            raise exc.CaptchaError
+        captcha_patterns = [
+            "https://www.google.com/recaptcha/api.js", "I'm not a robot"]
+        for captcha_pattern in captcha_patterns:
+            if captcha_pattern in html:
+                raise exc.CaptchaError("Found %r in html!" % captcha_pattern)
 
         data = list()
         soup = self.to_soup(html)

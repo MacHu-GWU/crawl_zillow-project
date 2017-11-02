@@ -1,8 +1,8 @@
 chardet
 requests
 beautifulsoup4
-crawlib==0.0.7
-pytq==0.0.3
+crawlib==0.0.8
+pytq==0.0.4
 pymongo_mate==0.0.4
 mongoengine_mate==0.0.1
 rolex==0.0.7

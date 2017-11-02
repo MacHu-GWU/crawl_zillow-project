@@ -10,6 +10,7 @@ class Config(object):
         host = None
         port = None
 
-
-class Crawler(object):
-    wait_time = 1.0
+    class Crawler(object):
+        wait_time = 1.0
+        browser_prepare_time = 10.0
+        chrome_driver_executable = None
